@@ -1,13 +1,35 @@
 #_*_coding:utf-8_*_
+import requests
+import time
 import telebot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from telebot import types
-from decouple import config
+
 from fastapi import FastAPI, Request
+
+
+url = "https://example.com/api/endpoint"
+max_retries = 3
+retry_delay = 5  # seconds
+
+for retry in range(max_retries):
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        break  # Break the loop if the request is successful
+    except requests.exceptions.RequestException as err:
+        print(f"Request failed. Retrying in {retry_delay} seconds...")
+        time.sleep(retry_delay)
+else:
+    print("Max retries exceeded. Request failed.")
+
+# Process the response
+if response is not None:
+    print(response.text)
 
 app = FastAPI()
 
-TOKEN = "6960873853:AAE6bP8dPwTIi7U1S9h2cCQwRyopJw7G9HQ"
+TOKEN = "6618933997:AAHojFJ2YyrtXU_zIbkAn-YH5dwUQEVEgvA"
 
 
 
@@ -28,10 +50,10 @@ async def webhook(request: Request):
 async def index():
     return {"message": "Hello World"}
 
-def main():
+def main_aa():
     bot.remove_webhook()
 
-TOKEN = config("TELEGRAM_BOT_TOKEN")
+
 
 bot = telebot.TeleBot(TOKEN)
 COMMANDS = {
@@ -221,5 +243,5 @@ def back_option_gold1(call):
 
 if __name__ == "__main__":
     print("running the code .....")
-     main()
+    main_aa()
     bot.polling()
