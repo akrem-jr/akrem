@@ -1,198 +1,308 @@
-import telebot
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
-from telebot import types
-from decouple import config
+import os
+from typing import Final, Optional
+from fastapi import FastAPI
+from pydantic import BaseModel
+from telegram import (
+    Bot,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Update,
+    ChatAction,
+    ParseMode,
+)
+from telegram.ext import (
+    Dispatcher,
+    CommandHandler,
+    CallbackContext,
+    CallbackQueryHandler,
+)
 
-TOKEN = config("TELEGRAM_BOT_TOKEN")
-
-bot = telebot.TeleBot(TOKEN)
-COMMANDS = {
-     "silver": "silver membership \n(Learn and earn program)",
-    "gold": "Gold Membership",
-    "vip": "Platinum Membership"
-}
-
-
-@bot.message_handler(commands=['start'])
-def start(message):
-     chat_id = message.chat.id
-     start_bot(chat_id, message.chat.first_name)
-     show_menu(message.chat.id)
-
-
-def show_menu(chat_id):
-    markup = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
-    plan_button = types.KeyboardButton('plan🎁')
-    status_button = types.KeyboardButton('Contact Admin')
-
-    markup.add(plan_button, status_button)
-    bot.send_message(chat_id," Check out our exciting membership plans and start your journey to success today!\n\n\t\t\t👇👇👇", reply_markup=markup)
-    
-
-def start_bot(chat_id, username):
-    
-    welcome_message = f"Welcome, {username}!"
-    bot.send_message(chat_id, welcome_message)
-    
-
-@bot.message_handler(func=lambda message: message.text == 'Contact Admin')
-def contact_admin(message):
-    bot.send_message(message.chat.id, "https://t.me/layne19")
-  
+TOKEN = os.environ.get("TOKEN")
+app = FastAPI()
+USDT_ADDRESS: Final[str] = "6960873853:AAE6bP8dPwTIi7U1S9h2cCQwRyopJw7G9HQ"
 
 
-@bot.message_handler(func=lambda message: message.text == 'plan🎁')
-def join_channel(message):
-    show_commands(message.chat.id)
-@bot.callback_query_handler(func=lambda call: True)
-def button(call):
-    command = call.data
-    chat_id = call.message.chat.id
+class TelegramWebhook(BaseModel):
+    """
+    Telegram Webhook Model using Pydantic for request body validation
+    """
 
-    
-    if command == 'vip':
-        bot.send_message(chat_id, 'You selected Platinum Membership.')
-        vip_menu(chat_id)
-    elif command == 'silver':
-        bot.send_message(chat_id, 'You selected Silver Membership.')
-        silver_menu(chat_id)
-    elif command == 'gold':
-        bot.send_message(chat_id, 'You selected Gold Membership.')
-        gold_menu(chat_id)
-    elif command == 'option_silver1':
-        
-        option_silver1(call)
-    elif command == 'option_silver2':
-        bot.send_message(chat_id, ' https://t.me/L4xsupport/3 ')
-        option_silver2(call)
-    elif command == 'option_gold1':
-          option_gold1(call)
-    elif command == 'back_option_vip1':
-        vip_menu(chat_id)
-    elif command == 'back_option_silver1':
-        silver_menu(chat_id)
-    elif command == 'back_option_gold1':
-        gold_menu(chat_id)
-    elif command == 'option1_1':
-        bot.send_message(chat_id, ' Please Send screenshot to confirm \n\n @layne19')
-    elif command == 'back':
-        show_commands(chat_id)
+    update_id: int
+    message: Optional[dict]
+    edited_message: Optional[dict]
+    channel_post: Optional[dict]
+    edited_channel_post: Optional[dict]
+    inline_query: Optional[dict]
+    chosen_inline_result: Optional[dict]
+    callback_query: Optional[dict]
+    shipping_query: Optional[dict]
+    pre_checkout_query: Optional[dict]
+    poll: Optional[dict]
+    poll_answer: Optional[dict]
 
-def show_commands(chat_id):
-    keyboard = []
-    for cmd, desc in COMMANDS.items():
-        keyboard.append([InlineKeyboardButton(desc, callback_data=cmd)])
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    bot.send_message(
-        chat_id=chat_id,
-        text="Please Choose Our Plan: ",
-        reply_markup=reply_markup
-    )
-def gold_menu(chat_id):
+def start(update: Update, context: CallbackContext):
     keyboard = [
-         [InlineKeyboardButton('For payment 💳', callback_data='option_gold1')],
-        [InlineKeyboardButton('⬅️Back', callback_data='back')],
+        [
+            InlineKeyboardButton("😎 VIP plan", callback_data="vip_plan"),
+        ],
+        [
+            InlineKeyboardButton("🎒  Master Class", callback_data="master_plan"),
+        ],
+        [
+            InlineKeyboardButton(
+                "💁  One to One Mentorship", callback_data="one_to_one"
+            ),
+        ],
     ]
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    bot.send_message(
-        chat_id=chat_id,
-        text="""L4X VIP  Gold Membership 
-📌High win Rate Forex Signal 
-📌London session and NY session live stream  Trade 
-📌1-3 Signal per Day 
-📌Free access  L4X VIP silver 
-
- subscription 100$ per monthly""",
-        reply_markup=reply_markup
+    update.message.reply_text(
+        """Welcome to our XE SNIPER Subscription Bot""",
+        reply_markup=InlineKeyboardMarkup(keyboard),
     )
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'option1')
-def option_gold1(call):
+def master_class(update: Update, context: CallbackContext):
+    text = """XE Sniper Master Class Program
+
+Basic to advanced forex trading knowledge
+
+Advanced Trading Psychology
+
+Risk and money management
+
+Access our Discord community.
+
+Access a free-quality gold signal for two month
+
+24/7 student guidance
+
+A big giveaway at the end of the class\nFinish Your Payment Using One of the methods and send the screenshot to @xesniper9"""
+    query = update.callback_query
     keyboard = [
-        [InlineKeyboardButton('⬅️Back', callback_data='back_option_gold1')],
+        [
+            InlineKeyboardButton(
+                "💳 Credit Card", url="https://buy.stripe.com/dR66oQ1Ow2RH3ssaEF"
+            )
+        ],
+        [
+            InlineKeyboardButton("📱 USDT(TRC20)", callback_data="copy_usdt_address"),
+        ],
+        [
+            InlineKeyboardButton("🏦 CBE(Bank)", callback_data="copy_bank_account"),
+        ],
     ]
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    bot.send_message(
-        chat_id=call.message.chat.id,
-        text="please contact \n\n @layne19",
-        reply_markup=reply_markup
+    query.delete_message()
+    query.bot.send_message(
+        chat_id=query.from_user.id,
+        text=text,
+        reply_markup=InlineKeyboardMarkup(keyboard),
     )
-def vip_menu(chat_id):
+
+
+def copy_bank_account(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.delete_message()
+    query.bot.send_message(
+        chat_id=query.from_user.id,
+        text="TEYIBA MOHAMMED \n```1000540470573```",
+        parse_mode=ParseMode.MARKDOWN,
+    )
+
+
+def one_to_one(update: Update, context: CallbackContext):
+    query = update.callback_query
     keyboard = [
-         [InlineKeyboardButton('⬅️Back', callback_data='back')],
+        [
+            InlineKeyboardButton(
+                "💳 Credit Card", url="https://buy.stripe.com/7sI9B264Mdwl4ww146"
+            )
+        ],
+        [InlineKeyboardButton("USDT(TRC20)", callback_data="copy_usdt_address")],
     ]
+    query.delete_message()
+    query.answer()
+    query.bot.send_message(
+        chat_id=query.from_user.id,
+        text="""XE Sniper One to One Mentorship Program
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
+Basic to advanced forex trading knowledge
 
-    bot.send_message(
-        chat_id=chat_id,
-        text="Platinum Membership Coming Soon...",
-        reply_markup=reply_markup
+Advanced Trading Psychology
+
+Risk and money management
+
+Access our Discord community.
+
+Access a free-quality gold signal for one month
+
+24/7 student guidance
+
+A big giveaway at the end of the class
+
+Get Xe Sniper Digital Certificate
+
+Course duration: 1 month and 15 days""",
+        reply_markup=InlineKeyboardMarkup(keyboard),
     )
-def silver_menu(chat_id):
+
+
+def copy_usdt_address(update: Update, context: CallbackContext):
+    query = update.callback_query
     keyboard = [
-        [InlineKeyboardButton('Done ✅', callback_data='option_silver1')],
-        [InlineKeyboardButton('🎦How to change partner 🎦', callback_data='option_silver2')],
-        [InlineKeyboardButton('⬅️Back', callback_data='back')],
+        [InlineKeyboardButton("🖼️ Send Screenshot", url="https://t.me/xesniper9")]
     ]
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    bot.send_message(
-        chat_id=chat_id,
-        text="ወደ L4X Silver VIP Learn and Earn Program \n\n1 ምዝገባ ነጻ ነው (Free Registration) \n\n2 የ EXNESS አካዉንት\n\n3 ከ 50$ በላይ Deposit \n\nየ Enxess አካዉንት ከሌሎት ከ እዚ በታች ባለው ሊንክ ይክፈቱ \n\nhttps://one.exness-track.com/a/k66q9ywpdp \n\nካሎት ደሞ ለ Enxess ወደ እኛ IB program እንዲቀይርሎት ያሳውቁ ለማሳወቅ ከፈለጉ በ ቀላሉ Live Chat በማረግ መቀየር ይችላሉ፤ \n\nPartner code k66q9ywpdp \n\nPartner Link https://one.exness-track.com/a/k66q9ywpdp \n\nእርዳታችን የሚያስፈልጎት ከሆነ ይፃፉልን። ",
-        reply_markup=reply_markup
+    query.bot.send_message(
+        chat_id=query.from_user.id,
+        text=f"Copy the Address below: 👇\n`{USDT_ADDRESS}`\nFinish the payment and send screen shot to @xesniper9",
+        parse_mode=ParseMode.MARKDOWN,
     )
 
-@bot.callback_query_handler(func=lambda call: call.data == 'option1')
-def option_silver1(call):
+
+def vip(update: Update, context: CallbackContext):
+    query = update.callback_query
     keyboard = [
-        [InlineKeyboardButton('⬅️Back', callback_data='back_option_silver1')],
+        [InlineKeyboardButton("YES 👌", callback_data="have_exness")],
+        [InlineKeyboardButton("NO  😥", callback_data="no_exness")],
     ]
+    query.delete_message()
+    query.answer()
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    query.bot.send_message(
+        chat_id=query.from_user.id,
+        text="""XE VIP signa
 
-    bot.send_message(
-        chat_id=call.message.chat.id,
-        text="Please Send screenshot to confirm \n\n @layne19",
-        reply_markup=reply_markup
+👉🏾 LIVE TRADE 
+👉🏾 daily signals  
+👉🏾 XE E-BOOK 
+👉🏾 more than 90% win rate  
+
+To join xe sniper vip signal 
+we require you to have an Exness account. do you have Exness account?""",
+        reply_markup=InlineKeyboardMarkup(keyboard),
     )
 
-@bot.callback_query_handler(func=lambda call: call.data == 'option2')
-def option_silver2(call):
+
+def no_exness(update: Update, context: CallbackContext):
+    query = update.callback_query
+    text = "Create Exness Account Using this 👇 Link\n If there is any problem contact us\n**Change your Ib\!** \nAfter you finish your verification processes \nSend your screenshot and your Exness Email to this user\mn  👉🏼 Using the Button bellow"
     keyboard = [
-        [InlineKeyboardButton('⬅️Back', callback_data='back_option_silver1')],
+        [
+            InlineKeyboardButton(
+                "Create Exness Account", url="https://one.exness-track.com/a/f5l76iz61m"
+            )
+        ],
+        [
+            InlineKeyboardButton("🖼️ Send Screenshot", url="https://t.me/xesniper9"),
+        ],
+        [
+            InlineKeyboardButton("💬 Contact Us", url="https://t.me/xesniper9"),
+        ],
+        [
+            InlineKeyboardButton("😎 Finish Payment", callback_data="pay_vip"),
+        ],
     ]
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    bot.send_message(
-        chat_id=call.message.chat.id,
-        text=" partner ከቀየራቹ ቡሀላ አዲስ የ MT4 ወይም ደሞ የ MT5 አካዉንት መክፈት አለባቹ ከዛን ከ በፊቱ አካዉንታቹ ወደ አዲሱ ያላቹን Balance  አስተላልፉ",
-        reply_markup=reply_markup
+    query.bot.send_message(
+        chat_id=query.from_user.id,
+        text=text,
+        reply_markup=InlineKeyboardMarkup(keyboard),
+        parse_mode=ParseMode.MARKDOWN_V2,
     )
-    
-@bot.callback_query_handler(func=lambda call: call.data == 'back_option_vip1')
-def back_option_vip1(call):
-    show_commands(call.message.chat.id)
-    
-    
-@bot.callback_query_handler(func=lambda call: call.data == 'back_option_silver1')
-def back_option_silver1(call):
-    show_commands(call.message.chat.id)
 
 
-@bot.callback_query_handler(func=lambda call: call.data == 'back_option_gold1')
-def back_option_gold1(call):
-    show_commands(call.message.chat.id)
+def yes_exness(update: Update, context: CallbackContext):
+    query.delete_message()
+    query = update.callback_query
+    text = "**Change your Ib\!** \nAfter you finish your verification processes \nSend your screenshot and your Exness Email to us  👉🏼 Using the Button bellow and Finish Your Payment"
+    keyboard = [
+        [
+            InlineKeyboardButton("🖼️ Send Screenshot", url="https://t.me/xesniper9"),
+        ],
+        [
+            InlineKeyboardButton("😎 Finish Payment", callback_data="pay_vip"),
+        ],
+    ]
+    video = open("description.MP4", "rb")
+    query.bot.send_chat_action(
+        chat_id=query.from_user.id, action=ChatAction.UPLOAD_VIDEO
+    )
+    query.bot.send_video(chat_id=query.from_user.id, video=video)
+    query.bot.send_message(
+        chat_id=query.from_user.id,
+        text=text,
+        reply_markup=InlineKeyboardMarkup(keyboard),
+        parse_mode=ParseMode.MARKDOWN_V2,
+    )
 
-if __name__ == "__main__":
-    print("running the code .....")
-    bot.polling()
+
+def pay_vip(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.delete_message()
+    text = "👉🏼 Using the Button bellow and Finish Your Payment and Send the screenshot to Us"
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "💳 Credit Card", url="https://buy.stripe.com/cN24gI2SA9g5bYY8ww"
+            ),
+        ],
+        [
+            InlineKeyboardButton("USDT(TRC20)", callback_data="copy_usdt_address"),
+        ],
+    ]
+    query.bot.send_message(
+        chat_id=query.from_user.id,
+        text=text,
+        reply_markup=InlineKeyboardMarkup(keyboard),
+        parse_mode=ParseMode.MARKDOWN_V2,
+    )
+
+
+def vip_exness(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.delete_message()
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                text="Pay", url="https://buy.stripe.com/7sI9B264Mdwl4ww146"
+            )
+        ]
+    ]
+    query.bot.send_message(
+        chat_id=query.from_user.id,
+        text="Some description here",
+        reply_markup=InlineKeyboardMarkup(keyboard),
+    )
+
+
+def register_handlers(dispatcher):
+    start_handler = CommandHandler("start", start)
+    dispatcher.add_handler(start_handler)
+    dispatcher.add_handler(CallbackQueryHandler(vip, pattern="vip_plan"))
+    dispatcher.add_handler(CallbackQueryHandler(master_class, pattern="master_plan"))
+    dispatcher.add_handler(CallbackQueryHandler(no_exness, pattern="no_exness"))
+    dispatcher.add_handler(CallbackQueryHandler(yes_exness, pattern="have_exness"))
+    dispatcher.add_handler(CallbackQueryHandler(one_to_one, pattern="one_to_one"))
+    dispatcher.add_handler(CallbackQueryHandler(pay_vip, pattern="pay_vip"))
+    dispatcher.add_handler(
+        CallbackQueryHandler(copy_bank_account, pattern="copy_bank_account")
+    )
+    dispatcher.add_handler(
+        CallbackQueryHandler(copy_usdt_address, pattern="copy_usdt_address")
+    )
+
+
+@app.post("/webhook")
+def webhook(webhook_data: TelegramWebhook):
+    """
+    Telegram Webhook
+    """
+    bot = Bot(token=TOKEN)
+    update = Update.de_json(webhook_data.__dict__, bot)
+    dispatcher = Dispatcher(bot, None, workers=4)
+    register_handlers(dispatcher)
+    dispatcher.process_update(update)
+    return {"message": "ok"}
+
+
+@app.get("/")
+def index():
+    return {"message": "Working"}
