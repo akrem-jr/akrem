@@ -4,38 +4,22 @@ import telebot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from telebot import types
 
-from fastapi import FastAPI, Request
+from flask import Flask, request
 
 
 
 
-app = FastAPI()
+app = Flask(__name__)
 
 TOKEN = "6618933997:AAHojFJ2YyrtXU_zIbkAn-YH5dwUQEVEgvA"
 
+@bot.message_handler(commands=['start'])
+def handle_start(message):
+    bot.reply_to(message, 'Hello! Welcome to your bot.')
 
-
-
-
-
-@app.post('/your-webhook-endpoint')
-async def async_webhook(request: Request):
-    update = telebot.types.Update.de_json(await request.json())
-    bot.process_new_updates([update])
-    return 'OK'
-
-def webhook(request: Request):
-    return app.asgi_app(request)
-    
-@app.get("/")
-async def index():
-    return {"message": "Hello World"}
-
-def main_aa():
-    bot.remove_webhook()
-
-
-
+@bot.message_handler(func=lambda message: True)
+def handle_message(message):
+    bot.reply_to(message, 'You said: ' + message.text)
 bot = telebot.TeleBot(TOKEN)
 COMMANDS = {
      "silver": "silver membership \n(Learn and earn program)",
@@ -224,5 +208,5 @@ def back_option_gold1(call):
 
 if __name__ == "__main__":
     print("running the code .....")
-    
+    run()
     bot.polling()
