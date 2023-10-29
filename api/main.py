@@ -18,16 +18,15 @@ TOKEN = "6618933997:AAHojFJ2YyrtXU_zIbkAn-YH5dwUQEVEgvA"
 
 
 
-@app.post("/webhook")
-async def webhook(request: Request):
-    """
-    Telegram Webhook
-    """
-    json_data = await request.json()
-    update = telebot.types.Update.de_json(json_data)
+@app.post('/your-webhook-endpoint')
+async def async_webhook(request: Request):
+    update = telebot.types.Update.de_json(await request.json())
     bot.process_new_updates([update])
-    return {"message": "ok"}
+    return 'OK'
 
+def webhook(request: Request):
+    return app.asgi_app(request)
+    
 @app.get("/")
 async def index():
     return {"message": "Hello World"}
