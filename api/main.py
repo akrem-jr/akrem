@@ -1,6 +1,5 @@
 #_*_coding:utf-8_*_
-import requests
-import time
+
 import telebot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from telebot import types
@@ -8,24 +7,7 @@ from telebot import types
 from fastapi import FastAPI, Request
 
 
-url = "https://example.com/api/endpoint"
-max_retries = 3
-retry_delay = 5  # seconds
 
-for retry in range(max_retries):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-        break  # Break the loop if the request is successful
-    except requests.exceptions.RequestException as err:
-        print(f"Request failed. Retrying in  seconds...{}".format(retry_delay))
-        time.sleep(retry_delay)
-else:
-    print("Max retries exceeded. Request failed.")
-
-# Process the response
-if response is not None:
-    print(response.text)
 
 app = FastAPI()
 
@@ -243,5 +225,5 @@ def back_option_gold1(call):
 
 if __name__ == "__main__":
     print("running the code .....")
-    main_aa()
+    
     bot.polling()
