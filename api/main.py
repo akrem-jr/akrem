@@ -18,7 +18,7 @@ for retry in range(max_retries):
         response.raise_for_status()
         break  # Break the loop if the request is successful
     except requests.exceptions.RequestException as err:
-        print(f"Request failed. Retrying in {retry_delay} seconds...")
+        print(f"Request failed. Retrying in  seconds...{}".format(retry_delay))
         time.sleep(retry_delay)
 else:
     print("Max retries exceeded. Request failed.")
